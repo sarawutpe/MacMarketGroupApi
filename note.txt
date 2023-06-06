@@ -1,0 +1,33 @@
+
+รูปภาพ 0/10
+
+ชื่อ
+
+ราคา
+
+หมวดหมู่
+
+สภาพ
+1. ใหม่ New
+2. มือสอง - เหมือนใหม่ Used - Like New
+3. มือสอง - สภาพดี Used - Good
+4. มือสอง - สภาพพอใช้ Used - Fair
+
+คำอธิบาย (optional)
+
+ตำแหน่ง
+
+เผยแพร่
+
+ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+Name        string             `bson:"name" json:"name" binding:"required"`
+Images      []string           `bson:"images" json:"images" binding:"required"`
+Price       int                `bson:"price" json:"price" binding:"required"`
+Category    *Category          `bson:"Category" json:"Category" binding:"required"`
+Condition   string             `bson:"condition" json:"condition" binding:"required,eq=NEW|eq=LIKE_NEW|eq=GOOD|eq=FAIR"`
+Description string             `bson:"description" json:"description" binding:"omitempty"`
+Location    string             `bson:"location" json:"location" binding:"omitempty"`
+IsPublic    bool               `bson:"isPublic,omitempty" json:"isPublic,omitempty"`
+IsActive    bool               `bson:"isActive,omitempty" json:"isActive,omitempty"`
+CreatedAt   time.Time          `bson:"createdAt,omitempty" json:"createdAt,omitempty"`
+UpdatedAt   time.Time          `bson:"updatedAt,omitempty" json:"updatedAt,omitempty"`
