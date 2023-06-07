@@ -7,18 +7,6 @@ namespace MacMarketGroupApi.Services;
 
 using System;
 
-public class CustomException : Exception
-{
-    public int StatusCode { get; }
-
-    public CustomException(string message, int statusCode)
-        : base(message)
-    {
-        StatusCode = statusCode;
-    }
-}
-
-
 public class AuthensService : Exception
 {
     private readonly IOptions<DBCollections> _dbCollections;

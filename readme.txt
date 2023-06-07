@@ -18,3 +18,10 @@ $ dotnet remove package <PACKAGE_NAME>
 $ dotnet remove package Newtonsoft.Json
 
 
+# Convert object to string
+var options = new JsonSerializerOptions { WriteIndented = true };
+var jsonString = JsonSerializer.Serialize(<JSON_OBJECT>, options);
+
+# Convert string to object
+var jsonObject = JsonSerializer.Deserialize<Product>(<JSON_STRING>);
+

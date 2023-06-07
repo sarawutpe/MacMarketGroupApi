@@ -1,9 +1,9 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System.Text.Json.Serialization;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 
-namespace MacMarketGroupApi;
-
+namespace MacMarketGroupApi.Models;
 public class Product
 {
     [BsonId]
@@ -55,5 +55,16 @@ public enum Condition
     LIKE_NEW,
     GOOD,
     FAIR
+}
+
+public class ProductRequest
+{
+
+    [BsonElement("data")]
+    [ModelBinder(BinderType = typeof(AuthorEntityBinder))]
+    public Product Data { get; set; } = null!;
+
+    [BsonElement("images")]
+    public List<IFormFile> Images { get; set; } = null!;
 }
 
