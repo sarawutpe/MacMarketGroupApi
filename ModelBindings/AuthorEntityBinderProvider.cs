@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Text.Json;
 using System.Reflection;
 namespace MacMarketGroupApi.Models;
+using MongoDB.Bson.Serialization.Attributes;
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
+using System.Threading.Tasks;
 
 public class AuthorEntityBinderProvider : IModelBinderProvider
 {
@@ -40,8 +44,14 @@ public class AuthorEntityBinder : IModelBinder
                 return Task.CompletedTask;
             }
 
+
             // Deserialize the JSON string to a object
-            var jsonObject = JsonSerializer.Deserialize(value, classType);
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+
+            var jsonObject = JsonSerializer.Deserialize(value, classType, jsonOptions);
             // Next Task
             context.Result = ModelBindingResult.Success(jsonObject);
         }

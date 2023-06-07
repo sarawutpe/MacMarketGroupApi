@@ -73,18 +73,13 @@ public class CategoriesController : ControllerBase
     {
         try
         {
-            // Init values
-            var now = DateTime.UtcNow;
-            category.CreatedAt = now;
-            category.UpdatedAt = now;
-
-            await _categoriesService.CreateCategory(category);
+            var result = await _categoriesService.CreateCategory(category);
 
             // Response
             return StatusCode(200, new Response
             {
                 Success = true,
-                Data = category
+                Data = result
             });
         }
         catch (HttpException exception)
@@ -107,8 +102,6 @@ public class CategoriesController : ControllerBase
             // Init values
             var now = DateTime.UtcNow;
             category.Id = result.Id;
-            category.CreatedAt = result.CreatedAt;
-            category.UpdatedAt = now;
             await _categoriesService.UpdateCategoryById(id, category);
 
             // Response

@@ -25,7 +25,7 @@ public class CategoriesService
     public async Task<Category> GetCategoryById(String id)
     {
         var collection = _dbConnection.GetCollection<Category>(_dbCollections.Value.Categories);
-        var result = await collection.Find(item => item.Id == id).FirstOrDefaultAsync();
+        var result = await collection.Find(category => category.Id == id).FirstOrDefaultAsync();
 
         if (result is null)
         {
@@ -37,21 +37,32 @@ public class CategoriesService
     public async Task<Category> CreateCategory(Category category)
     {
         var collection = _dbConnection.GetCollection<Category>(_dbCollections.Value.Categories);
+
+        // Set timestamps
+        var now = DateTime.UtcNow;
+        category.CreatedAt = now;
+        category.UpdatedAt = now;
+
         await collection.InsertOneAsync(category);
         return category;
     }
 
     public async Task<bool> UpdateCategoryById(String id, Category category)
     {
+
+        // Set timestamps
+        var now = DateTime.UtcNow;
+        category.UpdatedAt = now;
+
         var collection = _dbConnection.GetCollection<Category>(_dbCollections.Value.Categories);
-        var result = await collection.ReplaceOneAsync(item => item.Id == id, category);
+        var result = await collection.ReplaceOneAsync(category => category.Id == id, category);
         return result.ModifiedCount > 0;
     }
 
     public async Task<bool> DeleteCategory(String id)
     {
         var collection = _dbConnection.GetCollection<Category>(_dbCollections.Value.Categories);
-        var result = await collection.DeleteOneAsync(item => item.Id == id);
+        var result = await collection.DeleteOneAsync(category => category.Id == id);
         return result.DeletedCount > 0;
     }
 }

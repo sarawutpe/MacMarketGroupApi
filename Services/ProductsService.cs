@@ -15,11 +15,47 @@ public class ProductsService : Exception
         _dbConnection = DBConnection.GetInstance(configuration);
     }
 
-
-    public async Task<object> CreateProduct(ProductRequest productRequest)
+    public async Task<List<Product>> GetProducts()
     {
-        var collection = _dbConnection.GetCollection<User>(_dbCollections.Value.Products);
-        return await collection.Find(_ => true).ToListAsync();
+        var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
+        var result = await collection.Find(_ => true).ToListAsync();
+        return result;
     }
 
+    public async Task<Product> GetProductById(String id)
+    {
+        var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
+        var result = await collection.Find(product => product.Id == id).FirstOrDefaultAsync();
+
+        if (result is null)
+        {
+            throw new HttpException(404, "Not Found");
+        }
+
+        return result;
+    }
+
+    public async Task<Product> CreateProduct(Product productRequest)
+    {
+        // Set timestamps
+        var now = DateTime.UtcNow;
+        productRequest.CreatedAt = now;
+        productRequest.UpdatedAt = now;
+
+        var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
+        await collection.InsertOneAsync(productRequest);
+        return productRequest;
+    }
+
+    public async Task<Product> UpdateProductById(Product update)
+    {
+        return new Product();
+    }
+
+    public async Task<bool> DeleteProduct(String id)
+    {
+        var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
+        var result = await collection.DeleteOneAsync(product => product.Id == id);
+        return result.DeletedCount > 0;
+    }
 }

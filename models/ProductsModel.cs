@@ -2,10 +2,13 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace MacMarketGroupApi.Models;
 public class Product
 {
+
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
@@ -22,13 +25,14 @@ public class Product
     public string Name { get; set; } = "";
 
     [BsonElement("images")]
-    public string[] Images { get; set; } = Array.Empty<string>();
+    public List<string> Images { get; set; } = new List<string>();
 
     [BsonElement("price")]
     public decimal Price { get; set; } = 0;
 
     [BsonElement("condition")]
-    public Condition Condition { get; set; } = Condition.NEW;
+    [EnumDataType(typeof(Condition))]
+    public string Condition { get; set; } = "";
 
     [BsonElement("description")]
     public string Description { get; set; } = "";
@@ -51,9 +55,16 @@ public class Product
 
 public enum Condition
 {
+    [Display(Name = "NEW")]
     NEW,
+
+    [Display(Name = "LIKE_NEW")]
     LIKE_NEW,
+
+    [Display(Name = "GOOD")]
     GOOD,
+
+    [Display(Name = "FAIR")]
     FAIR
 }
 

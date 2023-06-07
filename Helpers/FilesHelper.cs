@@ -14,10 +14,9 @@ public class FilesHelper
         _configuration = configuration;
     }
 
-    public async Task<List<string>> SaveUploadedFile(IEnumerable<IFormFile> files)
+    public async Task<string> SaveUploadedFile(IFormFile file)
     {
-        List<string> fileNames = new List<string>();
-        List<string> allowedContentTypes = new List<string>
+        var allowedContentTypes = new List<string>
         {
             "image/jpeg",
             "image/png",
@@ -36,31 +35,25 @@ public class FilesHelper
             throw new InvalidOperationException("Path not found.");
         }
 
-        foreach (var file in files)
+        // Check error 
+        if (!allowedContentTypes.Contains(file.ContentType))
         {
-            // Check error 
-            if (!allowedContentTypes.Contains(file.ContentType))
-            {
-                throw new ArgumentException($"Allowed are {allowedContentTypesString} only!.");
-            }
-
-            // Generate a unique file name or use any desired naming convention
-            string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-
-            // Copy file
-            string filePath = Path.Combine(path, fileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            fileNames.Add(fileName);
+            throw new ArgumentException($"Allowed are {allowedContentTypesString} only!.");
         }
 
-        return fileNames;
+        // Generate a unique file name or use any desired naming convention
+        string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+
+        // Copy file
+        string filePath = Path.Combine(path, fileName);
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        return fileName;
     }
 
-    // Parameter is String, List String
     public string DeleteFile(object filePaths)
     {
         int deletedCount = 0;
@@ -72,18 +65,6 @@ public class FilesHelper
             {
                 File.Delete(singleFilePath);
                 deletedCount++;
-            }
-        }
-        // Check if the passed value is an enumerable collection of file paths
-        else if (filePaths is IEnumerable<string> multipleFilePaths)
-        {
-            foreach (string filePath in multipleFilePaths)
-            {
-                if (File.Exists(filePath))
-                {
-                    File.Delete(filePath);
-                    deletedCount++;
-                }
             }
         }
 

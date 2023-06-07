@@ -9,11 +9,9 @@ namespace MacMarketGroupApi.Models;
 public class Login
 {
     [BsonElement("email")]
-    [JsonProperty("email")]
     public string Email { get; set; } = null!;
 
     [BsonElement("password")]
-    [JsonProperty("password")]
     public string Password { get; set; } = null!;
 }
 
