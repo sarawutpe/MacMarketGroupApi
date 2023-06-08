@@ -17,7 +17,7 @@ public class ProductsService : Exception
         _dbConnection = DBConnection.GetInstance(configuration);
     }
 
-    public async Task<object> GetProducts()
+    public async Task<List<Product>> GetProducts()
     {
         var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
         var sortDefinition = Builders<Product>.Sort.Descending(product => product.Id);
@@ -39,7 +39,7 @@ public class ProductsService : Exception
             new BsonDocument("$sort", new BsonDocument("_id", -1))
         };
 
-        var result = collection.Aggregate<Product>(pipeline).ToListAsync().Result;
+        var result = await collection.Aggregate<Product>(pipeline).ToListAsync();
 
         return result;
     }
