@@ -22,6 +22,8 @@ builder.Services.AddSingleton<UsersService>();
 
 // Add Init Services
 // builder.Services.AddSingleton<DBConnection>();
+
+builder.Services.AddSingleton<CorsHelper>();
 builder.Services.AddSingleton<AuthsHelper>();
 builder.Services.AddSingleton<FilesHelper>();
 

@@ -13,12 +13,14 @@ namespace MacMarketGroupApi.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly ProductsService _productsService;
-    private readonly FilesHelper _filesUtil;
+    private readonly CorsHelper _corsHelper;
+    private readonly FilesHelper _filesHelper;
 
-    public ProductsController(ILogger<CategoriesController> logger, ProductsService productsService, FilesHelper filesUtil)
+    public ProductsController(ILogger<CategoriesController> logger, ProductsService productsService, CorsHelper corsHelper, FilesHelper filesHelper)
     {
         _productsService = productsService;
-        _filesUtil = filesUtil;
+        _corsHelper = corsHelper;
+        _filesHelper = filesHelper;
     }
 
     [HttpGet]
@@ -75,21 +77,22 @@ public class ProductsController : ControllerBase
         try
         {
             var data = productRequest.Data;
-            var images = productRequest.Images;
+            var images = productRequest?.Images ?? new List<IFormFile>();
 
             // Upload file images
             List<String> fileNames = new List<string>();
             foreach (var image in images)
             {
-                var file = await _filesUtil.SaveUploadedFile(image);
+                var file = await _filesHelper.SaveUploadedFile(image);
                 if (!string.IsNullOrEmpty(file))
                 {
                     fileNames.Add(file);
                 }
             }
 
-            // Added to field images 
-            productRequest.Data.Images = fileNames;
+            // Added to field code and images
+            data.Code = _corsHelper.GenerateUniqueId(10);
+            data.Images = fileNames;
             var result = await _productsService.CreateProduct(data);
 
             // Response
@@ -129,7 +132,7 @@ public class ProductsController : ControllerBase
             var fileNames = new List<string>();
             foreach (var image in images)
             {
-                var file = await _filesUtil.SaveUploadedFile(image);
+                var file = await _filesHelper.SaveUploadedFile(image);
                 if (!string.IsNullOrEmpty(file))
                 {
                     currentImageNames.Add(file);
@@ -140,7 +143,7 @@ public class ProductsController : ControllerBase
             foreach (var image in deletedImagesNames)
             {
                 currentImageNames.Remove(image);
-                _filesUtil.DeleteFile(image);
+                _filesHelper.DeleteFile(image);
             }
 
             // Set values
@@ -176,7 +179,7 @@ public class ProductsController : ControllerBase
             await _productsService.DeleteProduct(id);
 
             // Delete file images
-            result.Images.Select(image => _filesUtil.DeleteFile(image));
+            result.Images.Select(image => _filesHelper.DeleteFile(image));
 
             // Response
             return StatusCode(200, new Response

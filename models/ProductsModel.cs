@@ -6,10 +6,12 @@ using System.ComponentModel.DataAnnotations;
 namespace MacMarketGroupApi.Models;
 public class Product
 {
-
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
+
+    [BsonElement("code")]
+    public string Code { get; set; } = "";
 
     [BsonElement("userId")]
     [BsonRepresentation(BsonType.ObjectId)]
@@ -18,6 +20,9 @@ public class Product
     [BsonElement("categoryId")]
     [BsonRepresentation(BsonType.ObjectId)]
     public string CategoryId { get; set; } = null!;
+
+    [BsonElement("category")]
+    public Category? Category { get; set; }
 
     [BsonElement("name")]
     public string Name { get; set; } = "";

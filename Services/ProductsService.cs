@@ -1,6 +1,8 @@
 using MacMarketGroupApi.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace MacMarketGroupApi.Services;
 
@@ -15,11 +17,30 @@ public class ProductsService : Exception
         _dbConnection = DBConnection.GetInstance(configuration);
     }
 
-    public async Task<List<Product>> GetProducts()
+    public async Task<object> GetProducts()
     {
         var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
         var sortDefinition = Builders<Product>.Sort.Descending(product => product.Id);
-        var result = await collection.Find(_ => true).Sort(sortDefinition).ToListAsync();
+
+        var pipeline = new BsonDocument[]
+        {
+            new BsonDocument("$match", new BsonDocument()),
+            new BsonDocument{
+                {
+                    "$lookup", new BsonDocument{
+                        { "from", "categories" },
+                        { "localField", "categoryId" },
+                        { "foreignField", "_id" },
+                        { "as", "category" }
+                    }
+                }
+            },
+            new BsonDocument("$unwind", "$category"),
+            new BsonDocument("$sort", new BsonDocument("_id", -1))
+        };
+
+        var result = collection.Aggregate<Product>(pipeline).ToListAsync().Result;
+
         return result;
     }
 
