@@ -18,7 +18,8 @@ public class ProductsService : Exception
     public async Task<List<Product>> GetProducts()
     {
         var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
-        var result = await collection.Find(_ => true).ToListAsync();
+        var sortDefinition = Builders<Product>.Sort.Descending(product => product.Id);
+        var result = await collection.Find(_ => true).Sort(sortDefinition).ToListAsync();
         return result;
     }
 
@@ -35,21 +36,27 @@ public class ProductsService : Exception
         return result;
     }
 
-    public async Task<Product> CreateProduct(Product productRequest)
+    public async Task<Product> CreateProduct(Product product)
     {
         // Set timestamps
         var now = DateTime.UtcNow;
-        productRequest.CreatedAt = now;
-        productRequest.UpdatedAt = now;
+        product.CreatedAt = now;
+        product.UpdatedAt = now;
 
         var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
-        await collection.InsertOneAsync(productRequest);
-        return productRequest;
+        await collection.InsertOneAsync(product);
+        return product;
     }
 
-    public async Task<Product> UpdateProductById(Product update)
+    public async Task<bool> UpdateProductById(String id, Product product)
     {
-        return new Product();
+        // Set timestamps
+        var now = DateTime.UtcNow;
+        product.UpdatedAt = now;
+
+        var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
+        var result = await collection.ReplaceOneAsync(product => product.Id == id, product);
+        return result.ModifiedCount > 0;
     }
 
     public async Task<bool> DeleteProduct(String id)

@@ -18,11 +18,11 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetCategory()
+    public async Task<IActionResult> GetCategories()
     {
         try
         {
-            var result = await _categoriesService.GetCategory();
+            var result = await _categoriesService.GetCategories();
 
             MapperConfiguration config = new MapperConfiguration(cfg => cfg.CreateMap<Category, CategoryResponse>());
             var mapper = new Mapper(config);
@@ -51,6 +51,7 @@ public class CategoriesController : ControllerBase
         try
         {
             var result = await _categoriesService.GetCategoryById(id);
+
             // Response
             return StatusCode(200, new Response
             {
@@ -99,7 +100,7 @@ public class CategoriesController : ControllerBase
         {
             var result = await _categoriesService.GetCategoryById(id);
 
-            // Init values
+            // Set values
             var now = DateTime.UtcNow;
             category.Id = result.Id;
             await _categoriesService.UpdateCategoryById(id, category);

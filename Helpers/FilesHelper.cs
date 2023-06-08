@@ -29,10 +29,10 @@ public class FilesHelper
         string allowedContentTypesString = string.Join(", ", allowedContentTypes);
 
         // Set the path where you want to save the image
-        string? path = _configuration["AppSettings:FilePath"];
-        if (path is null)
+        string? settingFilePath = _configuration["AppSettings:FilePath"];
+        if (settingFilePath is null)
         {
-            throw new InvalidOperationException("Path not found.");
+            throw new InvalidOperationException("Setting path not found.");
         }
 
         // Check error 
@@ -45,8 +45,8 @@ public class FilesHelper
         string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
         // Copy file
-        string filePath = Path.Combine(path, fileName);
-        using (var stream = new FileStream(filePath, FileMode.Create))
+        string streamPath = Path.Combine(settingFilePath, fileName);
+        using (var stream = new FileStream(streamPath, FileMode.Create))
         {
             await file.CopyToAsync(stream);
         }
@@ -54,21 +54,23 @@ public class FilesHelper
         return fileName;
     }
 
-    public string DeleteFile(object filePaths)
+    public bool DeleteFile(string filePath)
     {
-        int deletedCount = 0;
-
-        // Check if the passed value is a single file path as a string
-        if (filePaths is string singleFilePath)
+        // Set the path where you want to save the image
+        string? settingFilePath = _configuration["AppSettings:FilePath"];
+        if (settingFilePath is null)
         {
-            if (File.Exists(singleFilePath))
-            {
-                File.Delete(singleFilePath);
-                deletedCount++;
-            }
+            throw new InvalidOperationException("Setting path not found.");
         }
 
-        return $"{deletedCount} entries deleted.";
+        var path = $"{settingFilePath}{filePath}";
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+            return true;
+        }
+
+        return false;
     }
 
 }

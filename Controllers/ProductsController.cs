@@ -21,9 +21,56 @@ public class ProductsController : ControllerBase
         _filesUtil = filesUtil;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetProducts()
+    {
+        try
+        {
+            var result = await _productsService.GetProducts();
+
+            // Response
+            return StatusCode(200, new Response
+            {
+                Success = true,
+                Data = result
+            });
+        }
+        catch (HttpException exception)
+        {
+            return StatusCode(exception.StatusCode, new Response
+            {
+                Success = false,
+                Error = exception.Message
+            });
+        }
+    }
+
+    [HttpGet("{id:length(24)}")]
+    public async Task<IActionResult> GetProductById(String id)
+    {
+        try
+        {
+            var result = await _productsService.GetProductById(id);
+
+            // Response
+            return StatusCode(200, new Response
+            {
+                Success = true,
+                Data = result
+            });
+        }
+        catch (HttpException exception)
+        {
+            return StatusCode(exception.StatusCode, new Response
+            {
+                Success = false,
+                Error = exception.Message
+            });
+        }
+    }
 
     [HttpPost]
-    public async Task<IActionResult> CreateProduct(ProductRequest productRequest)
+    public async Task<IActionResult> CreateProduct(RequestCreateProduct productRequest)
     {
         try
         {
@@ -31,14 +78,77 @@ public class ProductsController : ControllerBase
             var images = productRequest.Images;
 
             // Upload file images
-            var fileNames = images.Select(async image => await _filesUtil.SaveUploadedFile(image))
-                      .Where(fileNameTask => fileNameTask.Result != "")
-                      .Select(fileNameTask => fileNameTask.Result)
-                      .ToList();
+            List<String> fileNames = new List<string>();
+            foreach (var image in images)
+            {
+                var file = await _filesUtil.SaveUploadedFile(image);
+                if (!string.IsNullOrEmpty(file))
+                {
+                    fileNames.Add(file);
+                }
+            }
 
             // Added to field images 
             productRequest.Data.Images = fileNames;
             var result = await _productsService.CreateProduct(data);
+
+            // Response
+            return StatusCode(200, new Response
+            {
+                Success = true,
+                Data = result
+            });
+        }
+        catch (HttpException exception)
+        {
+            return StatusCode(exception.StatusCode, new Response
+            {
+                Success = false,
+                Error = exception.Message
+            });
+        }
+    }
+
+    [HttpPut("{id:length(24)}")]
+    public async Task<IActionResult> UpdateProductById(String id, RequestUpdateProduct requestProduct)
+    {
+        try
+        {
+            var data = requestProduct.Data;
+            var images = requestProduct?.Images ?? new List<IFormFile>();
+
+            var result = await _productsService.GetProductById(id);
+
+            List<String> currentImageNames = result.Images;
+            List<String> newImageNames = data.Images;
+
+            var deletedImagesNames = currentImageNames.Except(newImageNames).ToList();
+
+            // Manage file image
+            // Upload new file images
+            var fileNames = new List<string>();
+            foreach (var image in images)
+            {
+                var file = await _filesUtil.SaveUploadedFile(image);
+                if (!string.IsNullOrEmpty(file))
+                {
+                    currentImageNames.Add(file);
+                }
+            }
+
+            // Delete file images
+            foreach (var image in deletedImagesNames)
+            {
+                currentImageNames.Remove(image);
+                _filesUtil.DeleteFile(image);
+            }
+
+            // Set values
+            data.Id = result.Id;
+            data.Images = currentImageNames;
+            data.CreatedAt = result.CreatedAt;
+            data.UpdatedAt = result.UpdatedAt;
+            await _productsService.UpdateProductById(id, data);
 
             // Response
             return StatusCode(200, new Response

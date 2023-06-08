@@ -15,10 +15,11 @@ public class CategoriesService
         _dbConnection = DBConnection.GetInstance(configuration);
     }
 
-    public async Task<List<Category>> GetCategory()
+    public async Task<List<Category>> GetCategories()
     {
         var collection = _dbConnection.GetCollection<Category>(_dbCollections.Value.Categories);
-        var result = await collection.Find(_ => true).ToListAsync();
+        var sortDefinition = Builders<Category>.Sort.Descending(category => category.Id);
+        var result = await collection.Find(_ => true).Sort(sortDefinition).ToListAsync();
         return result;
     }
 

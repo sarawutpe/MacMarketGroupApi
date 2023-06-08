@@ -25,7 +25,7 @@ public class AuthensController : ControllerBase
     {
         try
         {
-            // Init values
+            // Set values
             // Hash a password
             user.Password = BCryptNet.BCrypt.HashPassword(user.Password);
             var result = await _authensService.Register(user);

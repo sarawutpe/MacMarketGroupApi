@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Text.Json;
-using System.Reflection;
 namespace MacMarketGroupApi.Models;
-using MongoDB.Bson.Serialization.Attributes;
-using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -62,3 +59,5 @@ public class AuthorEntityBinder : IModelBinder
         return Task.CompletedTask;
     }
 }
+
+

@@ -1,8 +1,6 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
 namespace MacMarketGroupApi.Models;
@@ -47,10 +45,10 @@ public class Product
     public bool IsActive { get; set; } = true;
 
     [BsonElement("createdAt")]
-    public DateTime CreatedAt { get; set; }
+    public virtual DateTime CreatedAt { get; set; }
 
     [BsonElement("updatedAt")]
-    public DateTime UpdatedAt { get; set; }
+    public virtual DateTime UpdatedAt { get; set; }
 }
 
 public enum Condition
@@ -68,7 +66,7 @@ public enum Condition
     FAIR
 }
 
-public class ProductRequest
+public class RequestCreateProduct
 {
 
     [BsonElement("data")]
@@ -76,6 +74,8 @@ public class ProductRequest
     public Product Data { get; set; } = null!;
 
     [BsonElement("images")]
-    public List<IFormFile> Images { get; set; } = null!;
+    public List<IFormFile>? Images { get; set; }
 }
+
+public class RequestUpdateProduct : RequestCreateProduct { }
 
