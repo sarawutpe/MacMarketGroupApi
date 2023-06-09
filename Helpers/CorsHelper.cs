@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MongoDB.Bson;
 
 namespace MacMarketGroupApi.Services;
 
@@ -18,6 +19,11 @@ public class CorsHelper
             uniqueId.Add(randomChar);
         }
         return new string(uniqueId.ToArray());
+    }
+
+    public bool ValidateObjectId(string id)
+    {
+        return ObjectId.TryParse(id, out _);
     }
 }
 

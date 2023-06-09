@@ -17,34 +17,29 @@ public class ProductsService : Exception
         _dbConnection = DBConnection.GetInstance(configuration);
     }
 
-
     public async Task<Response> GetProducts(int pageNumber, int pageSize, string search)
     {
-        // Pagination
-        var searchDefinition = new BsonDocument();
-        if (!string.IsNullOrEmpty(search))
-        {
-            searchDefinition.Add("name", new BsonDocument("$regex", new BsonRegularExpression(search, "i")));
-        }
-        var sortDefinition = new BsonDocument("_id", -1);
-        var skipDefinition = (pageNumber - 1) * pageSize;
+        // Aggregation pipelines
         var pipeline = new BsonDocument[]
         {
-            new BsonDocument("$match", new BsonDocument()),
-            new BsonDocument{
-                {
-                    "$lookup", new BsonDocument{
-                        { "from", "categories" },
-                        { "localField", "categoryId" },
-                        { "foreignField", "_id" },
-                        { "as", "category" }
+            new BsonDocument("$match", new BsonDocument
+            {
+                { "$or", new BsonArray
+                    {
+                        new BsonDocument("name", new BsonDocument("$regex", new BsonRegularExpression(search, "i")))
                     }
                 }
-            },
+            }),
+            new BsonDocument("$lookup", new BsonDocument
+            {
+                { "from", "categories" },
+                { "localField", "categoryId" },
+                { "foreignField", "_id" },
+                { "as", "category" }
+            }),
             new BsonDocument("$unwind", "$category"),
-            new BsonDocument("$match", searchDefinition),
-            new BsonDocument("$sort", sortDefinition),
-            new BsonDocument("$skip", skipDefinition),
+            new BsonDocument("$sort", new BsonDocument("_id", -1)),
+            new BsonDocument("$skip", (pageNumber - 1) * pageSize),
             new BsonDocument("$limit", pageSize),
         };
 
@@ -73,6 +68,106 @@ public class ProductsService : Exception
         }
 
         return result;
+    }
+
+    public async Task<Response> GetProductsByUserId(string userId, int pageNumber, int pageSize, string search)
+    {
+        var id = new ObjectId(userId);
+
+        // Aggregation pipelines
+        var pipeline = new BsonDocument[]
+        {
+            new BsonDocument("$match", new BsonDocument
+            {
+                { "userId", id },
+                { "$or", new BsonArray
+                    {
+                        new BsonDocument("name", new BsonDocument("$regex", new BsonRegularExpression(search, "i")))
+                    }
+                }
+            }),
+            new BsonDocument("$lookup", new BsonDocument
+            {
+                { "from", "categories" },
+                { "localField", "categoryId" },
+                { "foreignField", "_id" },
+                { "as", "category" }
+            }),
+            new BsonDocument("$unwind", "$category"),
+            new BsonDocument("$sort", new BsonDocument("_id", -1)),
+            new BsonDocument("$skip", (pageNumber - 1) * pageSize),
+            new BsonDocument("$limit", pageSize),
+        };
+
+        var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
+        var total = await collection.CountDocumentsAsync(Builders<Product>.Filter.Eq("userId", id));
+        var result = await collection.Aggregate<Product>(pipeline).ToListAsync();
+
+        return new Response
+        {
+            Success = true,
+            Total = total,
+            PageSize = pageSize,
+            PageNumber = pageNumber,
+            Data = result
+        };
+    }
+
+    public async Task<Response> GetProductsByCategoryCode(string categoryCode, int pageNumber, int pageSize, string search)
+    {
+        // Aggregation pipelines
+        var pipeline = new BsonDocument[]
+        {
+            new BsonDocument("$lookup", new BsonDocument
+            {
+                { "from", "categories" },
+                { "localField", "categoryId" },
+                { "foreignField", "_id" },
+                { "as", "category" }
+            }),
+            new BsonDocument("$match", new BsonDocument
+            {
+                {"category.code", new BsonDocument("$regex", new BsonRegularExpression(categoryCode, "i"))},
+                { "$or", new BsonArray
+                    {
+                        new BsonDocument("name", new BsonDocument("$regex", new BsonRegularExpression(search, "i"))),
+                    }
+                }
+            }),
+            new BsonDocument("$unwind", "$category"),
+            new BsonDocument("$sort", new BsonDocument("_id", -1)),
+            new BsonDocument("$skip", (pageNumber - 1) * pageSize),
+            new BsonDocument("$limit", pageSize),
+        };
+
+        var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
+
+        var pipelineWithCount = new BsonDocument[]
+        {
+            new BsonDocument("$lookup", new BsonDocument
+            {
+                { "from", "categories" },
+                { "localField", "categoryId" },
+                { "foreignField", "_id" },
+                { "as", "category" }
+            }),
+            new BsonDocument("$match", new BsonDocument
+            {
+                {"category.code", new BsonDocument("$regex", new BsonRegularExpression(categoryCode, "i"))},
+            }),
+             new BsonDocument("$unwind", "$category"),
+        };
+        var total = (await collection.Aggregate<Product>(pipelineWithCount).ToListAsync()).Count();
+        var result = await collection.Aggregate<Product>(pipeline).ToListAsync();
+
+        return new Response
+        {
+            Success = true,
+            Total = total,
+            PageSize = pageSize,
+            PageNumber = pageNumber,
+            Data = result
+        };
     }
 
     public async Task<Product> CreateProduct(Product product)

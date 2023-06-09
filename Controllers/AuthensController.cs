@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace MacMarketGroupApi.Controllers;
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/authens")]
 public class AuthensController : ControllerBase
 {
     private readonly AuthensService _authensService;
@@ -19,8 +19,7 @@ public class AuthensController : ControllerBase
         _usersService = usersService;
     }
 
-    [Route("Register")]
-    [HttpPost]
+    [HttpPost("register")]
     public async Task<IActionResult> Register(User user)
     {
         try
@@ -47,8 +46,7 @@ public class AuthensController : ControllerBase
         }
     }
 
-    [Route("Login")]
-    [HttpPost]
+    [HttpPost("login")]
     public async Task<object> Login(Login login)
     {
         try
@@ -82,8 +80,7 @@ public class AuthensController : ControllerBase
         }
     }
 
-    [Route("Forgot-Password")]
-    [HttpPost]
+    [HttpPost("forgot-password")]
     public async Task<object> ForgotPassword(RequestForgotPassword forgotPassword)
     {
         try

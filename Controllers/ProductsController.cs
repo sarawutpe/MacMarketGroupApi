@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MacMarketGroupApi.Controllers;
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/products")]
 public class ProductsController : ControllerBase
 {
     private readonly ProductsService _productsService;
@@ -49,6 +49,46 @@ public class ProductsController : ControllerBase
         try
         {
             var result = await _productsService.GetProductById(id);
+
+            // Response
+            return StatusCode(200, result);
+        }
+        catch (HttpException exception)
+        {
+            return StatusCode(exception.StatusCode, new Response
+            {
+                Success = false,
+                Error = exception.Message
+            });
+        }
+    }
+
+    [HttpGet("user/{userId:length(24)}")]
+    public async Task<IActionResult> GetProductByUserId(String userId, [FromQuery] int pageNumber = 0, [FromQuery] int pageSize = 0, [FromQuery] string search = "")
+    {
+        try
+        {
+            var result = await _productsService.GetProductsByUserId(userId, pageNumber, pageSize, search);
+
+            // Response
+            return StatusCode(200, result);
+        }
+        catch (HttpException exception)
+        {
+            return StatusCode(exception.StatusCode, new Response
+            {
+                Success = false,
+                Error = exception.Message
+            });
+        }
+    }
+
+    [HttpGet("category/{categoryCode}")]
+    public async Task<IActionResult> GetProductByCategoryId(String categoryCode, [FromQuery] int pageNumber = 0, [FromQuery] int pageSize = 0, [FromQuery] string search = "")
+    {
+        try
+        {
+            var result = await _productsService.GetProductsByCategoryCode(categoryCode, pageNumber, pageSize, search);
 
             // Response
             return StatusCode(200, result);

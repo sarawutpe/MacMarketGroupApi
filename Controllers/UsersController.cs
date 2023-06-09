@@ -5,7 +5,7 @@ using AutoMapper;
 
 namespace MacMarketGroupApi.Controllers;
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users")]
 public class UsersController : ControllerBase
 {
     private readonly UsersService _usersService;
