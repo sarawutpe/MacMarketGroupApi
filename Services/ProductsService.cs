@@ -17,11 +17,17 @@ public class ProductsService : Exception
         _dbConnection = DBConnection.GetInstance(configuration);
     }
 
-    public async Task<List<Product>> GetProducts()
-    {
-        var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
-        var sortDefinition = Builders<Product>.Sort.Descending(product => product.Id);
 
+    public async Task<Response> GetProducts(int pageNumber, int pageSize, string search)
+    {
+        // Pagination
+        var searchDefinition = new BsonDocument();
+        if (!string.IsNullOrEmpty(search))
+        {
+            searchDefinition.Add("name", new BsonDocument("$regex", new BsonRegularExpression(search, "i")));
+        }
+        var sortDefinition = new BsonDocument("_id", -1);
+        var skipDefinition = (pageNumber - 1) * pageSize;
         var pipeline = new BsonDocument[]
         {
             new BsonDocument("$match", new BsonDocument()),
@@ -36,12 +42,24 @@ public class ProductsService : Exception
                 }
             },
             new BsonDocument("$unwind", "$category"),
-            new BsonDocument("$sort", new BsonDocument("_id", -1))
+            new BsonDocument("$match", searchDefinition),
+            new BsonDocument("$sort", sortDefinition),
+            new BsonDocument("$skip", skipDefinition),
+            new BsonDocument("$limit", pageSize),
         };
 
+        var collection = _dbConnection.GetCollection<Product>(_dbCollections.Value.Products);
+        var total = await collection.CountDocumentsAsync(new BsonDocument());
         var result = await collection.Aggregate<Product>(pipeline).ToListAsync();
 
-        return result;
+        return new Response
+        {
+            Success = true,
+            Total = total,
+            PageSize = pageSize,
+            PageNumber = pageNumber,
+            Data = result
+        };
     }
 
     public async Task<Product> GetProductById(String id)

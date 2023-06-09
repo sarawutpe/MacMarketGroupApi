@@ -23,19 +23,15 @@ public class ProductsController : ControllerBase
         _filesHelper = filesHelper;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetProducts()
+    [HttpGet()]
+    public async Task<IActionResult> GetProducts([FromQuery] int pageNumber = 0, [FromQuery] int pageSize = 0, [FromQuery] string search = "")
     {
         try
         {
-            var result = await _productsService.GetProducts();
+            var result = await _productsService.GetProducts(pageNumber, pageSize, search);
 
             // Response
-            return StatusCode(200, new Response
-            {
-                Success = true,
-                Data = result
-            });
+            return StatusCode(200, result);
         }
         catch (HttpException exception)
         {
@@ -55,11 +51,7 @@ public class ProductsController : ControllerBase
             var result = await _productsService.GetProductById(id);
 
             // Response
-            return StatusCode(200, new Response
-            {
-                Success = true,
-                Data = result
-            });
+            return StatusCode(200, result);
         }
         catch (HttpException exception)
         {

@@ -20,6 +20,21 @@ public class Response
     [BsonElement("success")]
     public bool Success { get; set; }
 
+    [BsonElement("total")]
+    [BsonIgnoreIfNull]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public long? Total { get; set; }
+
+    [BsonElement("pageSize")]
+    [BsonIgnoreIfNull]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? PageSize { get; set; }
+
+    [BsonElement("pageNumber")]
+    [BsonIgnoreIfNull]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? PageNumber { get; set; }
+
     [BsonElement("data")]
     [BsonIgnoreIfNull]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -30,4 +45,5 @@ public class Response
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Error { get; set; }
 }
+
 
